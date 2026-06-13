@@ -14,7 +14,7 @@ class MainApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
-      theme: ThemeData.light(),
+      theme: ThemeData(fontFamily: "NotoSans"),
       darkTheme: ThemeData.dark(),
       themeMode: ThemeMode.system,
       home: RoomListPage(),
