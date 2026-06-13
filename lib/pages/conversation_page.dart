@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:neuebrandenbook_chat/models/message_conversation_item.dart';
@@ -71,15 +72,10 @@ class _ConversationPageState extends State<ConversationPage> {
               children: [
                 SizedBox(
                   width: Get.width * .6,
-                  child: Flexible(
-                    child: Text(
-                      widget.roomJoinItem.title,
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      maxLines: 3,
-                    ),
+                  child: Text(
+                    widget.roomJoinItem.title,
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    maxLines: 3,
                   ),
                 ),
                 Text(
@@ -185,11 +181,35 @@ class _ConversationPageState extends State<ConversationPage> {
   CupertinoContextMenu messageContainer(MessageConversationItem message) {
     return CupertinoContextMenu(
       actions: [
-        CupertinoContextMenuAction(child: Text("Copy")),
-        CupertinoContextMenuAction(child: Text("React with ❤️")),
-        CupertinoContextMenuAction(child: Text("Remove reaction")),
+        CupertinoContextMenuAction(
+          child: Text("Copy"),
+          onPressed: () async {
+            final data = ClipboardData(text: message.content);
+            await Clipboard.setData(data);
+            Get.snackbar("copied", message.content);
+            Get.back();
+          },
+        ),
+        CupertinoContextMenuAction(
+          child: Text("React with ❤️"),
+          onPressed: () async {
+            await HttpService.setReaction(message.id, true);
+            refresh();
+            Get.back();
+          },
+        ),
+        CupertinoContextMenuAction(
+          child: Text("Remove reaction"),
+          onPressed: () async {
+            await HttpService.setReaction(message.id, false);
+            refresh();
+            Get.back();
+          },
+        ),
       ],
       child: Badge(
+        alignment: Alignment(.7, .8),
+        backgroundColor: Colors.purple,
         isLabelVisible: message.isLiked,
         label: Text("❤️"),
         child: Padding(

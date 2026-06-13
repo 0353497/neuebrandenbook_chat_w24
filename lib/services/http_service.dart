@@ -81,4 +81,20 @@ class HttpService {
       rethrow;
     }
   }
+
+  static Future<void> setReaction(String mesageId, bool isLiked) async {
+    try {
+      final data = jsonEncode({"isLiked": isLiked});
+      print(data);
+      print(mesageId);
+      final res = await http.patch(
+        headers: {"Content-Type": "application/json"},
+        Uri.parse("$baseUrl/messages/$mesageId/reaction"),
+        body: data,
+      );
+      print(res.body);
+    } catch (e) {
+      rethrow;
+    }
+  }
 }
