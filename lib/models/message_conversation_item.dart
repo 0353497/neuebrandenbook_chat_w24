@@ -10,6 +10,8 @@ class MessageConversationItem {
   final String content;
   final bool isLiked;
 
+  DateTime get dateTime => DateTime.parse(timestamp);
+
   MessageConversationItem({
     required this.id,
     required this.user,

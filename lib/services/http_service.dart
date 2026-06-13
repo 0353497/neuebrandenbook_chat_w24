@@ -63,7 +63,8 @@ class HttpService {
     }
   }
 
-  static Future<List> getConversation(String roomId) async {
+  static Future<(List<UserConversationItem>, List<MessageConversationItem>)>
+  getConversation(String roomId) async {
     try {
       final res = await http.get(Uri.parse("$baseUrl/conversations/$roomId"));
       final dynamic json = jsonDecode(res.body);
@@ -75,7 +76,7 @@ class HttpService {
       final List<MessageConversationItem> messagesList = messages
           .map((e) => MessageConversationItem.fromJson(e))
           .toList();
-      return [users, messagesList];
+      return (usersList, messagesList);
     } catch (e) {
       rethrow;
     }
