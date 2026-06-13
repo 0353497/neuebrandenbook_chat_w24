@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:neuebrandenbook_chat/models/room_join_item.dart';
+import 'package:neuebrandenbook_chat/models/room_list_item.dart';
 import 'package:neuebrandenbook_chat/pages/conversation_page.dart';
 import 'package:neuebrandenbook_chat/pages/room_discover_modal.dart';
 import 'package:neuebrandenbook_chat/services/http_service.dart';
@@ -47,34 +49,82 @@ class _RoomListPageState extends State<RoomListPage> {
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: FutureBuilder(
-            future: HttpService.getRooms(),
+            future: HttpService.getJoinedRooms(),
             builder: (context, asyncSnapshot) {
               if (asyncSnapshot.connectionState == ConnectionState.waiting) {
                 return Center(child: CircularProgressIndicator());
               }
               return ListView.builder(
+                itemCount: asyncSnapshot.data!.length,
                 itemBuilder: (context, index) {
+                  final List<RoomJoinItem> items = asyncSnapshot.data!;
+                  final RoomJoinItem item = items[index];
                   return SizedBox(
                     height: 100,
                     width: Get.width,
                     child: PageView(
                       controller: PageController(initialPage: 1),
                       children: [
-                        ElevatedButton(onPressed: () {}, child: Text("Leave")),
+                        ElevatedButton(
+                          onPressed: () {
+                            Get.dialog(
+                              Dialog(
+                                child: Column(
+                                  children: [
+                                    Text("Are you sure"),
+                                    Row(
+                                      children: [
+                                        ElevatedButton(
+                                          onPressed: Get.back,
+                                          child: Text("No"),
+                                        ),
+                                        ElevatedButton(
+                                          onPressed: () async {
+                                            Get.back();
+                                            await HttpService.leave(item.id);
+                                            setState(() {});
+                                          },
+                                          child: Text("Yes"),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                          child: Text("Leave"),
+                        ),
                         ListTile(
                           onTap: () => Get.to(() => ConversationPage()),
                           leading: Badge.count(
+                            isLabelVisible: item.unreadCount >= 0,
                             backgroundColor: Colors.purple,
-                            count: 1,
-                            child: CircleAvatar(),
+                            count: item.unreadCount,
+                            child: CircleAvatar(
+                              foregroundImage: NetworkImage(
+                                HttpService.asset(item.avatar),
+                              ),
+                            ),
                           ),
-                          title: Text("Fantasy $index"),
-                          subtitle: Text("Subtitle , $index"),
+                          title: Text(item.title),
+                          subtitle: Text(
+                            item.lastMsg["text"],
+                            overflow: TextOverflow.ellipsis,
+                          ),
                           trailing: Text(
-                            DateFormat("dd/MM/yyyy").format(DateTime.now()),
+                            DateFormat(
+                              "dd/MM/yyyy",
+                            ).format(item.lastMessageDate),
                           ),
                         ),
-                        ElevatedButton(onPressed: () {}, child: Text("Pin")),
+                        ElevatedButton(
+                          onPressed: () async {
+                            await HttpService.pin(item.id);
+                            setState(() {});
+                          },
+                          child: Text("Pin"),
+                        ),
                       ],
                     ),
                   );
