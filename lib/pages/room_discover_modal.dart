@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/instance_manager.dart';
 import 'package:get/route_manager.dart';
+import 'package:neuebrandenbook_chat/services/http_service.dart';
 
 class RoomDiscoverModal extends StatefulWidget {
   const RoomDiscoverModal({super.key});
@@ -47,67 +48,95 @@ class _RoomDiscoverModalState extends State<RoomDiscoverModal> {
                 hintText: "Search for rooms...",
               ),
               Expanded(
-                child: ListView.builder(
-                  itemBuilder: (context, index) {
-                    return SizedBox(
-                      width: double.maxFinite,
-                      height: 160,
-                      child: Card(
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Row(
-                            children: [
-                              Column(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: [CircleAvatar()],
-                              ),
-                              Expanded(
-                                child: Padding(
-                                  padding: const EdgeInsets.all(4.0),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                child: FutureBuilder(
+                  future: HttpService.getRooms(),
+                  builder: (context, asyncSnapshot) {
+                    if (asyncSnapshot.connectionState ==
+                        ConnectionState.waiting) {
+                      return Center(child: CircularProgressIndicator());
+                    }
+                    return ListView.builder(
+                      itemCount: asyncSnapshot.data!.length,
+                      itemBuilder: (context, index) {
+                        final item = asyncSnapshot.data![index];
+                        return SizedBox(
+                          width: double.maxFinite,
+                          height: 160,
+                          child: Card(
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Row(
+                                children: [
+                                  Column(
+                                    mainAxisAlignment: MainAxisAlignment.start,
                                     children: [
-                                      Text(
-                                        "Title",
-                                        style: TextStyle(
-                                          fontSize: 24,
-                                          fontWeight: FontWeight.bold,
+                                      CircleAvatar(
+                                        foregroundImage: NetworkImage(
+                                          HttpService.asset(item.avatar),
                                         ),
-                                      ),
-                                      Text(
-                                        "$index members",
-                                        style: TextStyle(color: Colors.grey),
-                                      ),
-                                      Text(
-                                        "$index descriptions",
-                                        style: TextStyle(color: Colors.grey),
                                       ),
                                     ],
                                   ),
-                                ),
-                              ),
-                              Column(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: [
-                                  ElevatedButton(
-                                    style: ButtonStyle(
-                                      backgroundColor: WidgetStatePropertyAll(
-                                        Colors.purple,
-                                      ),
-                                      foregroundColor: WidgetStatePropertyAll(
-                                        Colors.black,
+                                  Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(4.0),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            item.title,
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          Text(
+                                            "${item.memberCount} members",
+                                            style: TextStyle(
+                                              color: Colors.grey,
+                                            ),
+                                          ),
+                                          Text(
+                                            "${item.description} descriptions",
+                                            maxLines: 3,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                              color: Colors.grey,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
-                                    onPressed: () {},
-                                    child: Text("Join"),
+                                  ),
+                                  Column(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: [
+                                      ElevatedButton(
+                                        style: ButtonStyle(
+                                          backgroundColor:
+                                              WidgetStatePropertyAll(
+                                                Colors.purple,
+                                              ),
+                                          foregroundColor:
+                                              WidgetStatePropertyAll(
+                                                Colors.black,
+                                              ),
+                                        ),
+                                        onPressed: () async {
+                                          await HttpService.join(item.id);
+                                          Get.back();
+                                          setState(() {});
+                                        },
+                                        child: Text("Join"),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),
-                            ],
+                            ),
                           ),
-                        ),
-                      ),
+                        );
+                      },
                     );
                   },
                 ),

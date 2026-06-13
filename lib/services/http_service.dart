@@ -47,7 +47,15 @@ class HttpService {
 
   static Future<void> leave(String roomId) async {
     try {
-      final res = await http.patch(Uri.parse("$baseUrl/rooms/$roomId/leave"));
+      final res = await http.post(Uri.parse("$baseUrl/rooms/$roomId/leave"));
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  static Future<void> join(String roomId) async {
+    try {
+      final res = await http.post(Uri.parse("$baseUrl/rooms/$roomId/join"));
     } catch (e) {
       rethrow;
     }

@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:get/instance_manager.dart';
 import 'package:get/route_manager.dart';
 
 class MiniProfileModal extends StatefulWidget {
   const MiniProfileModal({super.key});
-
   @override
   State<MiniProfileModal> createState() => _MiniProfileModalState();
 }
