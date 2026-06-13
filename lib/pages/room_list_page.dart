@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:neuebrandenbook_chat/pages/conversation_page.dart';
 import 'package:neuebrandenbook_chat/pages/room_discover_modal.dart';
 
 class RoomListPage extends StatefulWidget {
@@ -54,6 +55,7 @@ class _RoomListPageState extends State<RoomListPage> {
                   children: [
                     ElevatedButton(onPressed: () {}, child: Text("Leave")),
                     ListTile(
+                      onTap: () => Get.to(() => ConversationPage()),
                       leading: Badge.count(
                         backgroundColor: Colors.purple,
                         count: 1,
