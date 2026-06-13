@@ -5,8 +5,8 @@ import 'package:intl/intl.dart';
 import 'package:neuebrandenbook_chat/pages/mini_profile_modal.dart';
 
 class ConversationPage extends StatefulWidget {
-  const ConversationPage({super.key});
-
+  const ConversationPage({super.key, required this.roomId});
+  final String roomId;
   @override
   State<ConversationPage> createState() => _ConversationPageState();
 }

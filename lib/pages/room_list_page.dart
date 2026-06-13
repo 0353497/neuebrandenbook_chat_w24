@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:neuebrandenbook_chat/models/room_join_item.dart';
-import 'package:neuebrandenbook_chat/models/room_list_item.dart';
 import 'package:neuebrandenbook_chat/pages/conversation_page.dart';
 import 'package:neuebrandenbook_chat/pages/room_discover_modal.dart';
 import 'package:neuebrandenbook_chat/services/http_service.dart';
@@ -96,7 +95,8 @@ class _RoomListPageState extends State<RoomListPage> {
                           child: Text("Leave"),
                         ),
                         ListTile(
-                          onTap: () => Get.to(() => ConversationPage()),
+                          onTap: () =>
+                              Get.to(() => ConversationPage(roomId: item.id)),
                           leading: Badge.count(
                             isLabelVisible: item.unreadCount >= 0,
                             backgroundColor: Colors.purple,
