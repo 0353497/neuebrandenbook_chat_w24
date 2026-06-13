@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:neuebrandenbook_chat/pages/conversation_page.dart';
 import 'package:neuebrandenbook_chat/pages/room_discover_modal.dart';
+import 'package:neuebrandenbook_chat/services/http_service.dart';
 
 class RoomListPage extends StatefulWidget {
   const RoomListPage({super.key});
@@ -45,31 +46,39 @@ class _RoomListPageState extends State<RoomListPage> {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
-          child: ListView.builder(
-            itemBuilder: (context, index) {
-              return SizedBox(
-                height: 100,
-                width: Get.width,
-                child: PageView(
-                  controller: PageController(initialPage: 1),
-                  children: [
-                    ElevatedButton(onPressed: () {}, child: Text("Leave")),
-                    ListTile(
-                      onTap: () => Get.to(() => ConversationPage()),
-                      leading: Badge.count(
-                        backgroundColor: Colors.purple,
-                        count: 1,
-                        child: CircleAvatar(),
-                      ),
-                      title: Text("Fantasy $index"),
-                      subtitle: Text("Subtitle , $index"),
-                      trailing: Text(
-                        DateFormat("dd/MM/yyyy").format(DateTime.now()),
-                      ),
+          child: FutureBuilder(
+            future: HttpService.getRooms(),
+            builder: (context, asyncSnapshot) {
+              if (asyncSnapshot.connectionState == ConnectionState.waiting) {
+                return Center(child: CircularProgressIndicator());
+              }
+              return ListView.builder(
+                itemBuilder: (context, index) {
+                  return SizedBox(
+                    height: 100,
+                    width: Get.width,
+                    child: PageView(
+                      controller: PageController(initialPage: 1),
+                      children: [
+                        ElevatedButton(onPressed: () {}, child: Text("Leave")),
+                        ListTile(
+                          onTap: () => Get.to(() => ConversationPage()),
+                          leading: Badge.count(
+                            backgroundColor: Colors.purple,
+                            count: 1,
+                            child: CircleAvatar(),
+                          ),
+                          title: Text("Fantasy $index"),
+                          subtitle: Text("Subtitle , $index"),
+                          trailing: Text(
+                            DateFormat("dd/MM/yyyy").format(DateTime.now()),
+                          ),
+                        ),
+                        ElevatedButton(onPressed: () {}, child: Text("Pin")),
+                      ],
                     ),
-                    ElevatedButton(onPressed: () {}, child: Text("Pin")),
-                  ],
-                ),
+                  );
+                },
               );
             },
           ),
