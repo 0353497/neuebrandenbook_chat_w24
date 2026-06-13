@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -21,17 +23,27 @@ class _ConversationPageState extends State<ConversationPage> {
   late List<MessageConversationItem> messages = [];
   late final ScrollController scrollController;
   final TextEditingController textEditingController = TextEditingController();
+  late final Timer _timer;
   @override
   void initState() {
     super.initState();
+    init();
+  }
+
+  void init() async {
+    await getConversation();
     refresh();
     HttpService.markRoomAsRead(widget.roomJoinItem.id);
     scrollController = ScrollController();
     scrollController.addListener(() => setState(() {}));
+    _timer = Timer.periodic(5.seconds, (_) {
+      refresh();
+    });
   }
 
   @override
   void dispose() {
+    _timer.cancel();
     scrollController.dispose();
     super.dispose();
   }
@@ -103,6 +115,7 @@ class _ConversationPageState extends State<ConversationPage> {
                         final MessageConversationItem? last = index > 0
                             ? messages[index - 1]
                             : null;
+                        print(message.toString());
                         return Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -162,6 +175,7 @@ class _ConversationPageState extends State<ConversationPage> {
                               textEditingController.value.text,
                             );
                             refresh();
+                            textEditingController.clear();
                             setState(() {});
                           },
                     icon: Image.asset(
@@ -312,6 +326,12 @@ class _ConversationPageState extends State<ConversationPage> {
   }
 
   void refresh() async {
+    final res = await HttpService.getMessages(widget.roomJoinItem.id);
+    messages = res;
+    setState(() {});
+  }
+
+  Future getConversation() async {
     final res = await HttpService.getConversation(widget.roomJoinItem.id);
     users = res.$1;
     messages = res.$2;

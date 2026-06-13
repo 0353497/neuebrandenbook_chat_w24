@@ -101,9 +101,10 @@ class HttpService {
       final data = jsonEncode({"content": message});
       final res = await http.post(
         headers: {"Content-Type": "application/json"},
-        Uri.parse("$baseUrl/$roomId"),
+        Uri.parse("$baseUrl/messages/$roomId"),
         body: data,
       );
+      print(res.body);
     } catch (e) {
       rethrow;
     }
@@ -111,7 +112,29 @@ class HttpService {
 
   static Future<void> markRoomAsRead(String roomId) async {
     try {
+      print(roomId);
       final res = await http.patch(Uri.parse("$baseUrl/$roomId/read"));
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  static Future<List<MessageConversationItem>> getMessages(
+    String roomId,
+  ) async {
+    try {
+      final res = await http.get(
+        Uri.parse(
+          "$baseUrl/messages/$roomId?from=${DateTime(2024).toString()}&to${DateTime.now().toString()}",
+        ),
+      );
+      final dynamic json = jsonDecode(res.body);
+
+      final List messages = json;
+      final List<MessageConversationItem> messagesList = messages
+          .map((e) => MessageConversationItem.fromJson(e))
+          .toList();
+      return messagesList;
     } catch (e) {
       rethrow;
     }

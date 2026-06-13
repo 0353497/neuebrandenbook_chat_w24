@@ -10,7 +10,7 @@ MessageConversationItem _$MessageConversationItemFromJson(
   Map<String, dynamic> json,
 ) => MessageConversationItem(
   id: json['id'] as String,
-  user: json['user'] as String?,
+  user: MessageConversationItem._readUserId(json, 'user') as String?,
   timestamp: json['timestamp'] as String,
   content: json['content'] as String,
   isLiked: json['isLiked'] as bool,
