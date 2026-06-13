@@ -1,0 +1,46 @@
+services:
+  app:
+    image: ghcr.io/blz-it/tp-aec2026/skill08-session4-api:latest
+    ports:
+      - '3000:3000'
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/session_task
+      - PORT=3000
+      - ASSETS_DIR=./assets
+      # To use an LLM for generating messages instead of a few hardcoded ones,
+      # set USE_LLM to true and provide the necessary OpenAI API key or use a
+      # different, compatible LLM provider.
+      - USE_LLM=false
+      - OPENAI_BASE_URL=https://api.openai.com/v1
+      - OPENAI_API_KEY=MY_API_KEY
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - session-network
+    restart: unless-stopped
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: session_task
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - session-network
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+networks:
+  session-network:
+    driver: bridge
