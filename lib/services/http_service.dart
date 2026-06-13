@@ -85,14 +85,33 @@ class HttpService {
   static Future<void> setReaction(String mesageId, bool isLiked) async {
     try {
       final data = jsonEncode({"isLiked": isLiked});
-      print(data);
-      print(mesageId);
       final res = await http.patch(
         headers: {"Content-Type": "application/json"},
         Uri.parse("$baseUrl/messages/$mesageId/reaction"),
         body: data,
       );
       print(res.body);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  static Future<void> sendReaction(String roomId, String message) async {
+    try {
+      final data = jsonEncode({"content": message});
+      final res = await http.post(
+        headers: {"Content-Type": "application/json"},
+        Uri.parse("$baseUrl/$roomId"),
+        body: data,
+      );
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  static Future<void> markRoomAsRead(String roomId) async {
+    try {
+      final res = await http.patch(Uri.parse("$baseUrl/$roomId/read"));
     } catch (e) {
       rethrow;
     }

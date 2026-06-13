@@ -20,10 +20,12 @@ class _ConversationPageState extends State<ConversationPage> {
   late List<UserConversationItem> users = [];
   late List<MessageConversationItem> messages = [];
   late final ScrollController scrollController;
+  final TextEditingController textEditingController = TextEditingController();
   @override
   void initState() {
     super.initState();
     refresh();
+    HttpService.markRoomAsRead(widget.roomJoinItem.id);
     scrollController = ScrollController();
     scrollController.addListener(() => setState(() {}));
   }
@@ -134,6 +136,10 @@ class _ConversationPageState extends State<ConversationPage> {
                   ),
                   Expanded(
                     child: TextField(
+                      onChanged: (value) {
+                        setState(() {});
+                      },
+                      controller: textEditingController,
                       decoration: InputDecoration(
                         suffixIcon: Icon(Icons.emoji_emotions),
                         hintText: "Type a message...",
@@ -142,13 +148,26 @@ class _ConversationPageState extends State<ConversationPage> {
                   ),
                   IconButton(
                     style: ButtonStyle(
-                      backgroundColor: WidgetStatePropertyAll(Colors.purple),
+                      backgroundColor: WidgetStatePropertyAll(
+                        textEditingController.value.text.isEmpty
+                            ? Colors.purple.withAlpha(100)
+                            : Colors.purple,
+                      ),
                     ),
-                    onPressed: () {},
+                    onPressed: textEditingController.value.text.isEmpty
+                        ? null
+                        : () async {
+                            await HttpService.sendReaction(
+                              widget.roomJoinItem.id,
+                              textEditingController.value.text,
+                            );
+                            refresh();
+                            setState(() {});
+                          },
                     icon: Image.asset(
                       "assets/images/Icons/send.png",
-                      color: Colors.white,
                       width: 24,
+                      color: Colors.white,
                     ),
                   ),
                 ],
