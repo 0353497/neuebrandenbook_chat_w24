@@ -3,19 +3,20 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:neuebrandenbook_chat/models/message_conversation_item.dart';
+import 'package:neuebrandenbook_chat/models/room_join_item.dart';
 import 'package:neuebrandenbook_chat/models/user_conversation_item.dart';
 import 'package:neuebrandenbook_chat/pages/mini_profile_modal.dart';
 import 'package:neuebrandenbook_chat/services/http_service.dart';
 
 class ConversationPage extends StatefulWidget {
-  const ConversationPage({super.key, required this.roomId});
-  final String roomId;
+  const ConversationPage({super.key, required this.roomJoinItem});
+  final RoomJoinItem roomJoinItem;
   @override
   State<ConversationPage> createState() => _ConversationPageState();
 }
 
 class _ConversationPageState extends State<ConversationPage> {
-  late final List<UserConversationItem> users;
+  late List<UserConversationItem> users = [];
   late List<MessageConversationItem> messages = [];
   @override
   void initState() {
@@ -32,16 +33,30 @@ class _ConversationPageState extends State<ConversationPage> {
           mainAxisSize: MainAxisSize.min,
           spacing: 12,
           children: [
-            CircleAvatar(),
+            CircleAvatar(
+              foregroundImage: NetworkImage(
+                HttpService.asset(widget.roomJoinItem.avatar),
+              ),
+            ),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  "Title",
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                SizedBox(
+                  width: Get.width * .6,
+                  child: Flexible(
+                    child: Text(
+                      widget.roomJoinItem.title,
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      maxLines: 3,
+                    ),
+                  ),
                 ),
                 Text(
-                  "4 members",
+                  "${users.length} members",
                   style: TextStyle(fontSize: 16, color: Colors.grey),
                 ),
               ],
@@ -74,13 +89,8 @@ class _ConversationPageState extends State<ConversationPage> {
                             if (message.user != null &&
                                 message.user != "user-1")
                               otherProfileRow(message.user!),
-                            if (message.user == "user-1")
-                              yourPerson(message.user!),
-                            if (message.user != null)
-                              messageContainer(
-                                message.content,
-                                message.dateTime,
-                              ),
+
+                            if (message.user != null) messageContainer(message),
                           ],
                         );
                       },
@@ -143,30 +153,46 @@ class _ConversationPageState extends State<ConversationPage> {
     );
   }
 
-  CupertinoContextMenu messageContainer(String message, DateTime dateTime) {
+  CupertinoContextMenu messageContainer(MessageConversationItem message) {
     return CupertinoContextMenu(
       actions: [
         CupertinoContextMenuAction(child: Text("Copy")),
         CupertinoContextMenuAction(child: Text("React with ❤️")),
         CupertinoContextMenuAction(child: Text("Remove reaction")),
       ],
-      child: Card(
+      child: Badge(
+        isLabelVisible: message.isLiked,
+        label: Text("❤️"),
         child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(message),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Card(
+            color: message.user == "user-1" ? Colors.purpleAccent : null,
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: message.user != "user-1"
+                    ? CrossAxisAlignment.start
+                    : CrossAxisAlignment.end,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    DateFormat("hh:mm a").format(dateTime),
-                    style: TextStyle(color: Colors.grey),
+                    message.content,
+                    style: TextStyle(
+                      color: message.user == "user-1" ? Colors.white : null,
+                    ),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Text(
+                        DateFormat("HH:mm").format(message.dateTime),
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                    ],
                   ),
                 ],
               ),
-            ],
+            ),
           ),
         ),
       ),
@@ -218,7 +244,7 @@ class _ConversationPageState extends State<ConversationPage> {
   }
 
   void init() async {
-    final res = await HttpService.getConversation(widget.roomId);
+    final res = await HttpService.getConversation(widget.roomJoinItem.id);
     users = res.$1;
     messages = res.$2;
     setState(() {});

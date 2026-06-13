@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:neuebrandenbook_chat/models/room_join_item.dart';
@@ -95,8 +96,9 @@ class _RoomListPageState extends State<RoomListPage> {
                           child: Text("Leave"),
                         ),
                         ListTile(
-                          onTap: () =>
-                              Get.to(() => ConversationPage(roomId: item.id)),
+                          onTap: () => Get.to(
+                            () => ConversationPage(roomJoinItem: item),
+                          ),
                           leading: Badge.count(
                             isLabelVisible: item.unreadCount >= 0,
                             backgroundColor: Colors.purple,
