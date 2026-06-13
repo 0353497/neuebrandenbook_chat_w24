@@ -18,15 +18,42 @@ class ConversationPage extends StatefulWidget {
 class _ConversationPageState extends State<ConversationPage> {
   late List<UserConversationItem> users = [];
   late List<MessageConversationItem> messages = [];
+  late final ScrollController scrollController;
   @override
   void initState() {
     super.initState();
-    init();
+    refresh();
+    scrollController = ScrollController();
+    scrollController.addListener(() => setState(() {}));
+  }
+
+  @override
+  void dispose() {
+    scrollController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    var bool =
+        messages.isNotEmpty &&
+        scrollController.hasClients &&
+        scrollController.position.maxScrollExtent * .7 >
+            scrollController.position.pixels;
     return Scaffold(
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      floatingActionButton: bool
+          ? FloatingActionButton(
+              child: Icon(Icons.arrow_downward),
+              onPressed: () {
+                scrollController.animateTo(
+                  scrollController.position.maxScrollExtent,
+                  duration: 200.milliseconds,
+                  curve: Curves.easeIn,
+                );
+              },
+            )
+          : null,
       appBar: AppBar(
         leading: IconButton(onPressed: Get.back, icon: Icon(Icons.arrow_back)),
         title: Row(
@@ -71,11 +98,13 @@ class _ConversationPageState extends State<ConversationPage> {
               child: messages.isEmpty
                   ? Center(child: Text("no messages"))
                   : ListView.builder(
+                      controller: scrollController,
                       itemCount: messages.length,
                       itemBuilder: (BuildContext context, int index) {
                         final MessageConversationItem message = messages[index];
-                        final MessageConversationItem? last =
-                            messages[(index - 1) % messages.length];
+                        final MessageConversationItem? last = index > 0
+                            ? messages[index - 1]
+                            : null;
                         return Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -144,7 +173,7 @@ class _ConversationPageState extends State<ConversationPage> {
         if (user.isAuthor) Icon(Icons.check, color: Colors.blue),
         Text(user.name),
         InkWell(
-          onTap: () => Get.dialog(MiniProfileModal()),
+          onTap: () => Get.dialog(MiniProfileModal(user)),
           child: CircleAvatar(
             foregroundImage: NetworkImage(HttpService.asset(user.avatar)),
           ),
@@ -206,7 +235,7 @@ class _ConversationPageState extends State<ConversationPage> {
       spacing: 12,
       children: [
         InkWell(
-          onTap: () => Get.dialog(MiniProfileModal()),
+          onTap: () => Get.dialog(MiniProfileModal(user)),
           child: CircleAvatar(
             foregroundImage: NetworkImage(HttpService.asset(user.avatar)),
           ),
@@ -243,7 +272,7 @@ class _ConversationPageState extends State<ConversationPage> {
     );
   }
 
-  void init() async {
+  void refresh() async {
     final res = await HttpService.getConversation(widget.roomJoinItem.id);
     users = res.$1;
     messages = res.$2;
